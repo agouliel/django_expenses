@@ -7,9 +7,10 @@ from google.auth.transport import requests
 from django.conf import settings
 from django.http import JsonResponse
 from google_auth_oauthlib.flow import Flow # google-auth-oauthlib
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
 import json
+from .gcal import get_service as gcal_get_service
+from .models import User
+import uuid
 
 def sign_in(request):
     return render(request, 'sign_in.html')
@@ -53,33 +54,27 @@ def auth_receiver(request):
     # You could also authenticate the user here using the details from Google
     # https://docs.djangoproject.com/en/4.2/topics/auth/default/#how-to-log-a-user-in
 
-    #email = user_data["email"]
-    #user, created = models.User.objects.get_or_create(
-        #email=email, defaults={"username": email, "sign_up_method": "google", "first_name": user_data.get("given_name"),}
+    #user, created = User.objects.get_or_create(
+        #email=user_data['email'],
+        #defaults={'id':uuid.uuid4(), 'google_calendar_token':creds.to_json()}
     #)
+
+    try:
+        user = User.objects.get(email=user_data['email'])
+        user.google_calendar_token = creds.to_json()
+        user.save()
+    except User.DoesNotExist:
+        user = User(email=user_data['email'], id=uuid.uuid4(), google_calendar_token=creds.to_json())
 
     # Add any other logic, such as setting a http-only auth cookie as needed here.
     #return HttpResponse(status=200)
 
     request.session['user_data'] = user_data
     #print(user_data)
-
-    # Save to Database
-    # You should save creds.to_json() tied to your Django User model
-    # user_profile.google_calendar_token = creds.to_json()
-    # user_profile.save()
     
     #print(creds.to_json())
 
-    token_file = 'token.json'
-    with open(token_file, 'w') as token:
-        token.write(creds.to_json())
-    
-    SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
-
-    creds = Credentials.from_authorized_user_file(token_file, SCOPES)
-
-    service = build('calendar', 'v3', credentials=creds)
+    service = gcal_get_service(user.email)
 
     month_start = '2026-04-01T00:00:00.000000Z'
     #month_start = datetime.datetime.today().date().replace(day=1).isoformat() + 'T00:00:00.000000Z'
