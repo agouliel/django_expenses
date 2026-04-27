@@ -7,6 +7,8 @@ from google.auth.transport import requests
 from django.conf import settings
 from django.http import JsonResponse
 from google_auth_oauthlib.flow import Flow # google-auth-oauthlib
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 import json
 
 def sign_in(request):
@@ -66,7 +68,31 @@ def auth_receiver(request):
     # You should save creds.to_json() tied to your Django User model
     # user_profile.google_calendar_token = creds.to_json()
     # user_profile.save()
-    print(creds.to_json())
+    
+    #print(creds.to_json())
+
+    token_file = 'token.json'
+    with open(token_file, 'w') as token:
+        token.write(creds.to_json())
+    
+    SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+
+    creds = Credentials.from_authorized_user_file(token_file, SCOPES)
+
+    service = build('calendar', 'v3', credentials=creds)
+
+    month_start = '2026-04-01T00:00:00.000000Z'
+    #month_start = datetime.datetime.today().date().replace(day=1).isoformat() + 'T00:00:00.000000Z'
+    month_end = '2026-04-25T00:00:00.000000Z'
+
+    events_result = service.events().list(calendarId='primary',
+                                        timeMin=month_start,
+                                        timeMax=month_end,
+                                        singleEvents=True,
+                                        orderBy='startTime').execute()
+
+    events = events_result.get('items', [])
+    print(events)
 
     return JsonResponse({'status': 'success'})
 

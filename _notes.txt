@@ -14,6 +14,7 @@ Add your authorized Javascript origins
 Add your Authorized redirect URIs
 
 GOOGLE_OAUTH_CLIENT_ID is used in core/.env and sim/templates/sign_in.html
+and sim/views.py
 
 Google sign in flow
 1. render an HTML page, containing a script tag from Google that runs when the user visits the page and adds the Google sign in button
