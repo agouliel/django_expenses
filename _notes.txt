@@ -1,0 +1,28 @@
+https://www.photondesigner.com/articles/google-sign-in
+Open the Google APIs console
+Create a Google APIs project
+Select your project
+
+Click Credentials > Create credentials > OAuth client ID
+"Configure consent screen" > External > Create (example.com as the Authorized domain)
+Add scopes to determine what information you want to access (for example: email)
+Add test Google account users
+Click Back to Dashboard
+
+Click Credentials > Create credentials > OAuth client ID > Web application
+Add your authorized Javascript origins
+Add your Authorized redirect URIs
+
+GOOGLE_OAUTH_CLIENT_ID is used in core/.env and sim/templates/sign_in.html
+
+Google sign in flow
+1. render an HTML page, containing a script tag from Google that runs when the user visits the page and adds the Google sign in button
+2. after the user signs in on Google, Google will then redirect the user to a url on our site ('auth-reciever') with a POST request containing a token.
+3. we'll check that the token is valid and get the user's information from it
+
+generate the specific HTML to add the button for your app.
+To do this, visit the Google HTML generator
+enter your OAuth client ID.
+For Login URL, enter: http://localhost:8000/auth-receiver
+On the option between 'redirect' and 'popup', select 'redirect' for simplicity
+Select both 'Enable Sign in with Google button' and 'Enable Google One Tap'

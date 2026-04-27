@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Page</title>
+    <script src="https://accounts.google.com/gsi/client" async></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        img {
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin-top: 10px;
+        }
+
+        p {
+            color: #333;
+            margin: 10px 0;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .g_id_signin {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    {% if request.session.user_data %}
+    <div>
+        <p>Hi {{ request.session.user_data.given_name }} 🙂</p>
+        <p>Your email is {{ request.session.user_data.email }}</p>
+        <img src="{{ request.session.user_data.picture }}" alt="User picture">
+        <p>Click here to <a href="/sign-out">Sign out</a></p>
+    </div>
+    {% else %}
+    <div>
+        <p>Hi there 🙂 </p>
+        <p>Click below to sign in with Google</p>
+
+        <button id="google-login-btn" onclick="startAuthFlow()">
+            Sign in with Google
+        </button>
+
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    let client;
+    function initClient() {
+        console.log("Google library loaded, initializing client...");
+        client = google.accounts.oauth2.initCodeClient({
+            client_id: '1039882731179-eeemb69nhn1pgfim7a5mqbhiainkh7qb.apps.googleusercontent.com',
+            scope: 'openid email profile https://www.googleapis.com/auth/calendar.readonly',
+            ux_mode: 'popup',
+            error_callback: (err) => {
+                console.error("Initialization/Config Error:", err);
+            },
+            callback: (response) => {
+                console.log("Google Response:", response);
+                if (response.code) {
+                    // Send the code to your Django backend
+                    fetch('/auth-receiver', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({ code: response.code })
+                    })
+                    .then(res => window.location.reload()); // Reload once authenticated
+                }
+            },
+        });
+    }
+
+    function startAuthFlow() {
+        if (client) {
+            client.requestCode();
+        } else {
+            console.error("Google client not initialized yet. Please wait a moment.");
+            // Optional: retry initialization or show a loading spinner
+        }
+    }
+</script>
+
+<script src="https://accounts.google.com/gsi/client" onload="initClient()" async defer></script>
+
+</body>
+</html>
+
