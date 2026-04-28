@@ -1,5 +1,4 @@
 import os, datetime, sqlite3, psycopg2
-from collections import defaultdict
 from django.conf import settings
 
 def insert_to_db(service, user_id):
@@ -15,9 +14,6 @@ def insert_to_db(service, user_id):
 
     events = events_result.get('items', [])
 
-    totals_by_hashtag = defaultdict(float)
-    grand_total = 0
-
     events_with_expenses = []
 
     for event in events:
@@ -31,8 +27,6 @@ def insert_to_db(service, user_id):
             if first_word.replace('.', '', 1).isdigit():
                 amount = float(first_word)
                 hashtag = parts[-1]
-                totals_by_hashtag[hashtag] += amount
-                grand_total += amount
 
                 event_with_expense = (
                     event.get('id'),

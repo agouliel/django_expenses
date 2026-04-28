@@ -1,0 +1,110 @@
+{% load custom_tags %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expenses</title>
+    <style>
+        body { display: flex; margin: 0; font-family: Arial; }
+        .sidebar { width: 200px; background: #f4f4f4; padding: 10px; }
+        .main { flex: 1; padding: 20px; }
+        .rightbar { width: 300px; background: #fafafa; padding: 10px; border-left: 1px solid #ddd; }
+
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 5px; text-align: center; }
+        th { background: #eee; }
+
+        .cell { cursor: pointer; }
+        .cell:hover { background: #f0f8ff; }
+    </style>
+</head>
+<body>
+
+<!-- LEFT SIDEBAR (YEAR FILTER) -->
+<div class="sidebar">
+    <h3>Years</h3>
+    <ul>
+        {% for y in years %}
+            <li>
+                <a href="?year={{ y }}">{{ y }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- MAIN CONTENT (PIVOT TABLE) -->
+<div class="main">
+    <h2>Expenses {{ year }}</h2>
+
+    <table>
+        <tr>
+            <th>Category</th>
+            {% for m, name in months %}
+                <th>{{ name }}</th>
+            {% endfor %}
+            <th>Total</th>
+        </tr>
+
+        {% for category, months_data in pivot.items %}
+        <tr>
+            <td>{{ category }}</td>
+
+            {% for m, name in months %}
+            <td class="cell"
+                onclick="loadDetails('{{ category }}', '{{ m }}')">
+                {{ months_data|get_item:m|floatformat:2 }}
+            </td>
+            {% endfor %}
+
+            <td><strong>{{ totals_by_category|get_item:category|floatformat:2 }}</strong></td>
+        </tr>
+        {% endfor %}
+
+        <!-- TOTAL ROW -->
+        <tr>
+            <td><strong>Total</strong></td>
+            {% for m, name in months %}
+                <td><strong>{{ totals_by_month|get_item:m|floatformat:2 }}</strong></td>
+            {% endfor %}
+            <td></td>
+        </tr>
+    </table>
+</div>
+
+<!-- RIGHT SIDEBAR (DETAILS) -->
+<div class="rightbar" id="details">
+    <h3>Details</h3>
+    <div id="details-content">
+        Click a cell to see expenses
+    </div>
+</div>
+
+<script>
+    const expenseMap = {{ expense_map_json|safe }};
+
+
+    function loadDetails(category, month) {
+        const key = `${category}|${month}`;
+        const expenses = expenseMap[key] || [];
+
+        let html = "";
+
+        expenses.forEach(exp => {
+            html += `
+                <div>
+                    <a href="${exp.url}">
+                        <strong>${exp.summary || ''}</strong>
+                    </a> - 
+                    ${exp.amount || 0}<br>
+                </div>
+                <hr>
+            `;
+        });
+
+        document.getElementById("details-content").innerHTML =
+            html || "No data";
+    }
+</script>
+
+</body>
+</html>
