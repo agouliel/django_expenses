@@ -3,3 +3,4 @@ python-dotenv
 google-api-python-client
 jwt
 google-auth-oauthlib
+psycopg2-binary

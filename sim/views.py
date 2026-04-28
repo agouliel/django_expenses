@@ -11,6 +11,7 @@ import json
 from .gcal import get_service as gcal_get_service
 from .models import User
 import uuid
+from .expenses import insert_to_db
 
 def sign_in(request):
     return render(request, 'sign_in.html')
@@ -75,20 +76,8 @@ def auth_receiver(request):
     #print(creds.to_json())
 
     service = gcal_get_service(user.email)
-
-    month_start = '2026-04-01T00:00:00.000000Z'
-    #month_start = datetime.datetime.today().date().replace(day=1).isoformat() + 'T00:00:00.000000Z'
-    month_end = '2026-04-25T00:00:00.000000Z'
-
-    events_result = service.events().list(calendarId='primary',
-                                        timeMin=month_start,
-                                        timeMax=month_end,
-                                        singleEvents=True,
-                                        orderBy='startTime').execute()
-
-    events = events_result.get('items', [])
-    print(events)
-
+    insert_to_db(service, user.id)
+    
     return JsonResponse({'status': 'success'})
 
     return redirect('sign_in')
