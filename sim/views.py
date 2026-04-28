@@ -71,6 +71,7 @@ def auth_receiver(request):
         user.save()
     except User.DoesNotExist:
         user = User(email=user_data['email'], id=uuid.uuid4(), google_calendar_token=creds.to_json())
+        user.save()
 
     # Add any other logic, such as setting a http-only auth cookie as needed here.
     #return HttpResponse(status=200)
@@ -83,9 +84,8 @@ def auth_receiver(request):
     service = gcal_get_service(user.email)
     insert_to_db(service, user.id)
     
-    return JsonResponse({'status': 'success'})
-
-    return redirect('sign_in')
+    #return JsonResponse({'status': 'success'})
+    return redirect('expenses')
 
 
 def sign_out(request):
@@ -105,9 +105,12 @@ def serialize_expense(e):
 def expenses_view(request):
     # https://chatgpt.com/c/69ef68dc-8920-8332-aca8-efc06fde66b2
     
+    email = request.session['user_data']['email']
+    user = User.objects.get(email=email)
+    user_id = user.id
     year = request.GET.get("year")
 
-    expenses = Expense.objects.all()
+    expenses = Expense.objects.filter(user_id=user_id)
 
     # Filter by year (since date_start is text, we assume format "YYYY-MM-DD")
     if year:

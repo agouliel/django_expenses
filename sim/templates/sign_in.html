@@ -97,7 +97,7 @@
                         },
                         body: JSON.stringify({ code: response.code })
                     })
-                    .then(res => window.location.reload()); // Reload once authenticated
+                    .then(res => { window.location.href = '/expenses'; });
                 }
             },
         });
