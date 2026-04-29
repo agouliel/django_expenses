@@ -18,7 +18,7 @@ Body: { "code": "<authorization_code>" }
 
 After the fetch resolves, the browser redirects to `/expenses`. This redirect happens client-side before the server's redirect response is processed.
 
-3. Backend — Token Exchange (`views.py`)
+3. Backend — Token Exchange (`views.py`)   
 `auth_receiver` parses the JSON body to get the code, then uses `google_auth_oauthlib.flow.Flow` to exchange it for tokens:
 ```
 flow = Flow.from_client_secrets_file(                                         
