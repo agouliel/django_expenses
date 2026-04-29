@@ -68,10 +68,9 @@ def auth_receiver(request):
     try:
         user = User.objects.get(email=user_data['email'])
         user.google_calendar_token = creds.to_json()
-        user.save()
     except User.DoesNotExist:
         user = User(email=user_data['email'], id=uuid.uuid4(), google_calendar_token=creds.to_json())
-        user.save()
+    user.save()
 
     # Add any other logic, such as setting a http-only auth cookie as needed here.
     #return HttpResponse(status=200)
