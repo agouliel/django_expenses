@@ -56,8 +56,7 @@ The token is persisted to the `User` model (keyed by `email`)
 user = User.objects.get(email=user_data['email'])                             
 user.google_calendar_token = creds.to_json()  # overwrites on re-login
 # ...or on first login:                                                       
-user = User(email=user_data['email'], id=uuid.uuid4(),                        
-google_calendar_token=creds.to_json())                                        
+user = User(email=user_data['email'], id=uuid.uuid4(), google_calendar_token=creds.to_json())
 user.save()                                                                   
 ```
 `creds.to_json()` serializes the entire credentials object — access token, refresh token, expiry, scopes — as a JSON string stored in the `google_calendar_token` TextField.   
